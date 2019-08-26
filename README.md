@@ -1,7 +1,7 @@
-# Deep copy object
+# Deep assign
 
-Deep copy object is a small JavaScript utility to deeply copy an object.
-Subtypes of object (such as arrays, funcitons or Date) are not copied.
+Deep assign is a small JavaScript utility to deeply assign an object.
+Subtypes of object (such as arrays, funcitons or Date) are ignored.
 
 ## Table of contents
 
@@ -40,7 +40,7 @@ npm install -g npm@latest
 1. Clone the repo
 
 ```
-git clone https://github.com/sargalias/deep-copy-obj.git
+git clone https://github.com/sargalias/deep-assign.git
 ```
 
 2. Install NPM packages

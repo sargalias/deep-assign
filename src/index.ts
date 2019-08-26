@@ -8,7 +8,7 @@ interface DeepAssign {
 
 // eslint-disable-next-line
 const deepAssign: DeepAssign = (target, source) => {
-  return target;
+  return Object.assign(target, source);
 };
 
 export default deepAssign;

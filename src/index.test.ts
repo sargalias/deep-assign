@@ -7,6 +7,7 @@ describe('deepAssign', () => {
       ${{}}  | ${{}}                    | ${{}}
       ${{}}  | ${{ a: 1, b: 2 }}        | ${{ a: 1, b: 2 }}
       ${{ a: 1 }}  | ${{ b: 2, c: 3 }}  | ${{ a: 1, b: 2, c: 3 }}
+      ${{ a: 1 }}  | ${{ a: 2, b: 3 }}  | ${{ a: 2, b: 3 }}
   `.test(
     'deepAssign called with $target and $source should return $expected and should have the same reference as target',
     ({ target, source, expected }) => {

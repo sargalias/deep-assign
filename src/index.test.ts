@@ -1,5 +1,5 @@
 import each from 'jest-each';
-import deepAssign from './index'; // eslint-disable-line
+import deepAssign, { Obj } from './index';
 
 describe('deepAssign, correct result and references', () => {
   each`
@@ -53,6 +53,38 @@ describe('deepAssign, correct result and references', () => {
         e: 5,
       },
       f: 7,
+    };
+
+    const result = deepAssign(target, source);
+
+    expect(result).toEqual(expected);
+    expect(result).toBe(target);
+    expect(result.b).toBe(target.b);
+  });
+
+  test('nested target and source with null values', () => {
+    const target: Obj = {
+      a: null,
+      b: {
+        c: null,
+        d: 3,
+      },
+    };
+    const source: Obj = {
+      b: {
+        d: null,
+        e: 5,
+      },
+      f: null,
+    };
+    const expected: Obj = {
+      a: null,
+      b: {
+        c: null,
+        d: null,
+        e: 5,
+      },
+      f: null,
     };
 
     const result = deepAssign(target, source);

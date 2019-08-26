@@ -2,27 +2,23 @@ export interface Obj {
   [k: string]: any;
 }
 
-const deepCopyObj = (obj?: Obj) => {
-  if (obj === undefined) {
-    return undefined;
-  }
+interface DeepAssign {
+  (target: Obj, source: Obj): Obj;
+}
 
-  const result: Obj = {};
-  Object.entries(obj).forEach(([key, value]) => {
-    if (isObjectSubtype(value)) {
-      if (isStrictObject(value)) {
-        result[key] = deepCopyObj(value);
+// eslint-disable-next-line
+const deepAssign: DeepAssign = (target, source) => {
+  Object.entries(source).forEach(([key, value]) => {
+    if (typeof value === 'object' && value !== null) {
+      if (value.constructor === Object) {
+        const newTarget = typeof target[key] === 'object' ? target[key] : {};
+        target[key] = deepAssign(newTarget, value); // eslint-disable-line no-param-reassign
       }
     } else {
-      result[key] = value;
+      target[key] = value; // eslint-disable-line no-param-reassign
     }
   });
-  return result;
+  return target;
 };
 
-const isObjectSubtype = (value: any): boolean =>
-  typeof value === 'object' && value !== null;
-
-const isStrictObject = (value: any): boolean => value.constructor === Object;
-
-export { deepCopyObj as default };
+export default deepAssign;

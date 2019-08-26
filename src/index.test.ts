@@ -1,111 +1,129 @@
 import each from 'jest-each';
-import deepCopyObj, { Obj } from './index'; // eslint-disable-line no-unused-vars
+import deepAssign, { Obj } from './index';
 
-describe('deepCopyObj', () => {
-  describe('equality tests', () => {
-    each`
-      obj
-      ${undefined}
-      ${{}}
-      ${{ a: 5, b: 7 }}
-      ${{ a: 5, b: undefined, c: null }}
-      ${{ a: 5, b: 7, c: {} }}
-      ${{ a: 5, b: null, c: undefined, d: { a: 5, b: null, c: undefined } }}
-      ${{
-        a: { a: 5, b: null, c: undefined, d: { a: 1, b: null, c: undefined } },
-        b: null,
-        c: undefined,
-        d: { a: 5, b: null, c: undefined, d: { a: 1, b: null, c: undefined } },
-      }}
-    `.test('deepCopyObj() called with $obj should return $obj', ({ obj }) => {
-      const result = deepCopyObj(obj);
-      expect(result).toEqual(obj);
-    });
-
-    test('other subtypes of Object should be ignored', () => {
-      const obj: Obj = {
-        a: { a: 5, b: null, c: undefined, d: { a: 1, b: null, c: undefined } },
-        f: new Date(),
-        e: [1, 2, 3],
-        d: { a: 5, b: null, c: undefined, d: { a: 1, b: null, c: undefined } },
-      };
-      const expected: Obj = {
-        a: { a: 5, b: null, c: undefined, d: { a: 1, b: null, c: undefined } },
-        d: { a: 5, b: null, c: undefined, d: { a: 1, b: null, c: undefined } },
-      };
-
-      const result = deepCopyObj(obj);
-
+describe('deepAssign, correct result and references', () => {
+  each`
+      target | source                   | expected
+      ${{}}  | ${{}}                    | ${{}}
+      ${{}}  | ${{ a: 1, b: 2 }}        | ${{ a: 1, b: 2 }}
+      ${{ a: 1 }}  | ${{ b: 2, c: 3 }}  | ${{ a: 1, b: 2, c: 3 }}
+      ${{ a: 1 }}  | ${{ a: 2, b: 3 }}  | ${{ a: 2, b: 3 }}
+  }}
+  `.test(
+    'deepAssign called with $target and $source should return $expected',
+    ({ target, source, expected }) => {
+      const result = deepAssign(target, source);
       expect(result).toEqual(expected);
-    });
+      expect(result).toBe(target);
+    },
+  );
 
-    test('should only copy own properties', () => {
-      const mockProto = {
-        protoProperty: 10,
-      };
-      const obj: Obj = Object.create(mockProto);
-      obj.a = 5;
-      obj.b = 7;
+  test('flat target with nested source', () => {
+    const target = { a: 1 };
+    const source = { b: 2, c: { d: 4, e: 5 } };
+    const expected = { a: 1, b: 2, c: { d: 4, e: 5 } };
 
-      const result = deepCopyObj(obj);
+    const result = deepAssign(target, source);
 
-      expect(result).toEqual({ a: 5, b: 7 });
-    });
+    expect(result).toEqual(expected);
+    expect(result).toBe(target);
+    expect(result.c).not.toBe(source.c);
   });
 
-  describe('reference tests', () => {
-    test('result of {} should not be the same object', () => {
-      const obj = {};
-      const result = deepCopyObj(obj);
-      expect(result).not.toBe(obj);
-    });
+  test('nested target and source with the same nested property', () => {
+    const target = {
+      a: 1,
+      b: {
+        c: 2,
+        d: 3,
+      },
+    };
+    const source = {
+      b: {
+        d: 4,
+        e: 5,
+      },
+      f: 7,
+    };
+    const expected = {
+      a: 1,
+      b: {
+        c: 2,
+        d: 4,
+        e: 5,
+      },
+      f: 7,
+    };
 
-    test('result of nested object (one level) should not have the same objects in references', () => {
-      const nestedObj = {
-        nestedA: 1,
-        nestedB: 2,
-      };
-      const obj = {
-        a: 3,
-        b: 4,
-        nestedObj,
-      };
+    const result = deepAssign(target, source);
 
-      const result = deepCopyObj(obj);
+    expect(result).toEqual(expected);
+    expect(result).toBe(target);
+    expect(result.b).toBe(target.b);
+  });
 
-      expect(result).not.toBe(obj);
-      expect(result.nestedObj).not.toBe(nestedObj);
-    });
+  test('nested target and source with null values', () => {
+    const target: Obj = {
+      a: null,
+      b: {
+        c: null,
+        d: 3,
+      },
+    };
+    const source: Obj = {
+      b: {
+        d: null,
+        e: 5,
+      },
+      f: null,
+    };
+    const expected: Obj = {
+      a: null,
+      b: {
+        c: null,
+        d: null,
+        e: 5,
+      },
+      f: null,
+    };
 
-    test('result of deeply nested object should not have the same objects in references', () => {
-      const nestedObj1: Obj = {
-        nestedA: 1,
-        nestedB: null,
-      };
+    const result = deepAssign(target, source);
 
-      const nestedObj3: Obj = {
-        nestedA: 1,
-        nestedB: undefined,
-      };
-      const nestedObj2: Obj = {
-        nestedA: 1,
-        nestedB: 2,
-        nestedObj3,
-      };
+    expect(result).toEqual(expected);
+    expect(result).toBe(target);
+    expect(result.b).toBe(target.b);
+  });
 
-      const obj = {
-        a: 3,
-        b: 4,
-        nestedObj1,
-        nestedObj2,
-      };
+  test('object subtypes should be ignored', () => {
+    const target: Obj = {
+      a: [1, 2],
+      b: {
+        c: new Date(),
+        d: 3,
+      },
+    };
+    const source: Obj = {
+      b: {
+        d: [3, 4],
+        e: 5,
+      },
+      f: new Date(),
+    };
+    const expected: Obj = {
+      a: target.a,
+      b: {
+        c: target.b.c,
+        d: 3,
+        e: 5,
+      },
+    };
 
-      const result = deepCopyObj(obj);
+    const result = deepAssign(target, source);
 
-      expect(result).not.toBe(obj);
-      expect(result.nestedObj1).not.toBe(nestedObj1);
-      expect(result.nestedObj2).not.toBe(nestedObj2);
-      expect(result.nestedObj2.nestedObj3).not.toBe(nestedObj3);
-    });
+    expect(result).toEqual(expected);
+    expect(result).toBe(target);
+    expect(result.a).toBe(target.a);
+    expect(result.b).toBe(target.b);
+    expect(result.b.c).toBe(target.b.c);
   });
 });

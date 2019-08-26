@@ -93,4 +93,37 @@ describe('deepAssign, correct result and references', () => {
     expect(result).toBe(target);
     expect(result.b).toBe(target.b);
   });
+
+  test('object subtypes should be ignored', () => {
+    const target: Obj = {
+      a: [1, 2],
+      b: {
+        c: new Date(),
+        d: 3,
+      },
+    };
+    const source: Obj = {
+      b: {
+        d: [3, 4],
+        e: 5,
+      },
+      f: new Date(),
+    };
+    const expected: Obj = {
+      a: target.a,
+      b: {
+        c: target.b.c,
+        d: 3,
+        e: 5,
+      },
+    };
+
+    const result = deepAssign(target, source);
+
+    expect(result).toEqual(expected);
+    expect(result).toBe(target);
+    expect(result.a).toBe(target.a);
+    expect(result.b).toBe(target.b);
+    expect(result.b.c).toBe(target.b.c);
+  });
 });

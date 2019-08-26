@@ -10,8 +10,10 @@ interface DeepAssign {
 const deepAssign: DeepAssign = (target, source) => {
   Object.entries(source).forEach(([key, value]) => {
     if (typeof value === 'object' && value !== null) {
-      const newTarget = typeof target[key] === 'object' ? target[key] : {};
-      target[key] = deepAssign(newTarget, value); // eslint-disable-line no-param-reassign
+      if (value.constructor === Object) {
+        const newTarget = typeof target[key] === 'object' ? target[key] : {};
+        target[key] = deepAssign(newTarget, value); // eslint-disable-line no-param-reassign
+      }
     } else {
       target[key] = value; // eslint-disable-line no-param-reassign
     }

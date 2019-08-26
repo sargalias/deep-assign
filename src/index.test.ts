@@ -9,4 +9,13 @@ describe('deepAssign', () => {
 
     expect(result).toEqual({});
   });
+
+  test('return object should be the target object', () => {
+    const target = {};
+    const source = {};
+
+    const result = deepAssign(target, source);
+
+    expect(result).toBe(target);
+  });
 });

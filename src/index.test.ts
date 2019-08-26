@@ -29,4 +29,36 @@ describe('deepAssign, correct result and references', () => {
     expect(result).toBe(target);
     expect(result.c).not.toBe(source.c);
   });
+
+  test('nested target and source with the same nested property', () => {
+    const target = {
+      a: 1,
+      b: {
+        c: 2,
+        d: 3,
+      },
+    };
+    const source = {
+      b: {
+        d: 4,
+        e: 5,
+      },
+      f: 7,
+    };
+    const expected = {
+      a: 1,
+      b: {
+        c: 2,
+        d: 4,
+        e: 5,
+      },
+      f: 7,
+    };
+
+    const result = deepAssign(target, source);
+
+    expect(result).toEqual(expected);
+    expect(result).toBe(target);
+    expect(result.b).toBe(target.b);
+  });
 });
